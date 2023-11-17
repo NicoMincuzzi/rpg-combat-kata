@@ -7,6 +7,6 @@ public record Level(int value) {
     }
 
     public boolean isTargetLevelFiveOrMoreBelowTheAttacker(int targetLevel) {
-        return value - targetLevel >= 5;
+        return targetLevel + 5 <= value;
     }
 }
