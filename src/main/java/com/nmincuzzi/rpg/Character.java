@@ -5,10 +5,10 @@ import java.util.UUID;
 public class Character {
     private final String id;
     private int health;
-    private int level;
+    private Level level;
     private boolean alive;
 
-    private Character(int health, int level, boolean alive) {
+    private Character(int health, Level level, boolean alive) {
         this.id = UUID.randomUUID().toString();
         this.health = health;
         this.level = level;
@@ -16,11 +16,11 @@ public class Character {
     }
 
     public static Character defaultCharacter() {
-        return new Character(1000, 1, true);
+        return new Character(1000, new Level(1), true);
     }
 
     public static Character deadCharacter() {
-        return new Character(0, 1, false);
+        return new Character(0, new Level(1), false);
     }
 
     public String getId() {
@@ -32,7 +32,7 @@ public class Character {
     }
 
     public int getLevel() {
-        return level;
+        return level.getValue();
     }
 
     public boolean isAlive() {
@@ -43,10 +43,11 @@ public class Character {
         if (isItSelf(enemy)) {
             return;
         }
-        if(level + 5 <= enemy.getLevel()){
-            damage = damage/2;
-        }if(level - enemy.getLevel() >= 5){
-            damage += damage/2;
+        if (level.isTargetLevelFiveOrMoreAboveTheAttacker(enemy.getLevel())) {
+            damage = damage / 2;
+        }
+        if (level.isTargetLevelFiveOrMoreBelowTheAttacker(enemy.getLevel())) {
+            damage += damage / 2;
         }
 
         enemy.decreaseHealth(damage);
@@ -61,7 +62,8 @@ public class Character {
     }
 
     public void increaseLevel(int value) {
-        this.level += value;
+        int newLevelValue = this.level.getValue() + value;
+        this.level = new Level(newLevelValue);
     }
 
     private void decreaseHealth(int damage) {
