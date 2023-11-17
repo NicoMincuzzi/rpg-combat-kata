@@ -55,7 +55,7 @@ public class Character {
     }
 
     public void attackTo(Character enemy, Damage damage) {
-        if (isItSelf(enemy) || attackMaxRange < enemy.attackMaxRange || isAlliedWith(enemy)) {
+        if (!isEnableToAttach(enemy)) {
             return;
         }
 
@@ -65,7 +65,7 @@ public class Character {
     }
 
     public boolean healTo(Character character, int power) {
-        if (!character.isAlive() || !isItSelf(character) && !isAlliedWith(character)) {
+        if (!isEnableToHeal(character)) {
             return false;
         }
         character.increaseHealth(power);
@@ -104,4 +104,11 @@ public class Character {
         return id.equals(character.getId());
     }
 
+    private boolean isEnableToAttach(Character enemy) {
+        return !isItSelf(enemy) && attackMaxRange >= enemy.attackMaxRange && !isAlliedWith(enemy);
+    }
+
+    private boolean isEnableToHeal(Character character) {
+        return character.isAlive() && (isItSelf(character) || isAlliedWith(character));
+    }
 }
