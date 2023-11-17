@@ -4,11 +4,11 @@ import java.util.UUID;
 
 public class Character {
     private final String id;
-    private int health;
+    private Health health;
     private Level level;
     private boolean alive;
 
-    private Character(int health, Level level, boolean alive) {
+    private Character(Health health, Level level, boolean alive) {
         this.id = UUID.randomUUID().toString();
         this.health = health;
         this.level = level;
@@ -16,23 +16,23 @@ public class Character {
     }
 
     public static Character defaultCharacter() {
-        return new Character(1000, new Level(1), true);
+        return new Character(new Health(1000), new Level(1), true);
     }
 
     public static Character deadCharacter() {
-        return new Character(0, new Level(1), false);
+        return new Character(new Health(0), new Level(1), false);
     }
 
     public String getId() {
         return id;
     }
 
-    public int getHealth() {
+    public Health getHealth() {
         return health;
     }
 
     public int getLevel() {
-        return level.getValue();
+        return level.value();
     }
 
     public boolean isAlive() {
@@ -62,26 +62,23 @@ public class Character {
     }
 
     public void increaseLevel(int value) {
-        int newLevelValue = this.level.getValue() + value;
+        int newLevelValue = this.level.value() + value;
         this.level = new Level(newLevelValue);
     }
 
     private void decreaseHealth(int damage) {
-        if (damage >= health) {
-            health = 0;
+        if (health.isLethalDamage(damage)) {
+            health = new Health(0);
             alive = false;
             return;
         }
 
-        this.health -= damage;
+        int newHealthValue = health.value() - damage;
+        this.health = new Health(newHealthValue);
     }
 
     private void increaseHealth(int power) {
-        this.health += power;
-
-        if (this.health > 1000) {
-            this.health = 1000;
-        }
+        this.health = new Health(health.healthPostHealing(power));
     }
 
     private boolean isItSelf(Character character) {

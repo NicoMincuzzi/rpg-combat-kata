@@ -12,7 +12,7 @@ public class RpgCombatKataTest {
     public void default_character_parameters() {
         Character character = defaultCharacter();
 
-        assertEquals(character.getHealth(), 1000);
+        assertEquals(character.getHealth(), new Health(1000));
         assertEquals(character.getLevel(), 1);
         assertTrue(character.isAlive());
     }
@@ -24,7 +24,7 @@ public class RpgCombatKataTest {
 
         character.hitTo(enemy, 100);
 
-        assertEquals(enemy.getHealth(), 900);
+        assertEquals(enemy.getHealth(), new Health(900));
     }
 
     @Test
@@ -34,7 +34,7 @@ public class RpgCombatKataTest {
 
         character.hitTo(enemy, 2000);
 
-        assertEquals(enemy.getHealth(), 0);
+        assertEquals(enemy.getHealth(), new Health(0));
         assertFalse(enemy.isAlive());
     }
 
@@ -54,7 +54,7 @@ public class RpgCombatKataTest {
 
         character.hitTo(character, 100);
 
-        assertEquals(character.getHealth(), 1000);
+        assertEquals(character.getHealth(), new Health(1000));
     }
 
     @Test
@@ -66,7 +66,7 @@ public class RpgCombatKataTest {
         boolean result = character.healTo(character2, 200);
 
         assertFalse(result);
-        assertEquals(800, character2.getHealth());
+        assertEquals(new Health(800), character2.getHealth());
     }
 
     @Test
@@ -77,7 +77,7 @@ public class RpgCombatKataTest {
 
         character.hitTo(enemy, 100);
 
-        assertEquals(enemy.getHealth(), 950);
+        assertEquals(enemy.getHealth(), new Health(950));
     }
 
     @Test
@@ -88,6 +88,6 @@ public class RpgCombatKataTest {
 
         character.hitTo(enemy, 100);
 
-        assertEquals(enemy.getHealth(), 850);
+        assertEquals(enemy.getHealth(), new Health(850));
     }
 }
