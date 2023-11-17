@@ -49,13 +49,45 @@ public class RpgCombatKataTest {
     }
 
     @Test
-    public void character_can_heal_character_if_he_is_alive() {
+    public void character_cannot_deal_damage_to_itself() {
         Character character = defaultCharacter();
-        Character friend = defaultCharacter();
 
-        boolean result = character.healTo(friend, 200);
+        character.hitTo(character, 100);
 
-        assertTrue(result);
-        assertEquals(friend.getHealth(), 1000);
+        assertEquals(character.getHealth(), 1000);
+    }
+
+    @Test
+    public void character_can_only_heal_itself_if_he_is_alive() {
+        Character character = defaultCharacter();
+        Character character2 = defaultCharacter();
+        character.hitTo(character2, 200);
+
+        boolean result = character.healTo(character2, 200);
+
+        assertFalse(result);
+        assertEquals(800, character2.getHealth());
+    }
+
+    @Test
+    public void if_the_target_is_5_or_more_Levels_above_the_attacker() {
+        Character character = defaultCharacter();
+        Character enemy = defaultCharacter();
+        enemy.increaseLevel(5);
+
+        character.hitTo(enemy, 100);
+
+        assertEquals(enemy.getHealth(), 950);
+    }
+
+    @Test
+    public void if_the_target_is_5_or_more_Levels_below_the_attacker() {
+        Character character = defaultCharacter();
+        Character enemy = defaultCharacter();
+        character.increaseLevel(5);
+
+        character.hitTo(enemy, 100);
+
+        assertEquals(enemy.getHealth(), 850);
     }
 }
