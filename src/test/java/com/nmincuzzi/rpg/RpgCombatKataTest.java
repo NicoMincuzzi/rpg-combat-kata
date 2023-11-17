@@ -2,8 +2,8 @@ package com.nmincuzzi.rpg;
 
 import org.junit.jupiter.api.Test;
 
-import static com.nmincuzzi.rpg.Character.deadCharacter;
-import static com.nmincuzzi.rpg.Character.defaultCharacter;
+import static com.nmincuzzi.rpg.Character.*;
+import static com.nmincuzzi.rpg.Character.ranged;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RpgCombatKataTest {
@@ -22,7 +22,7 @@ public class RpgCombatKataTest {
         Character character = defaultCharacter();
         Character enemy = defaultCharacter();
 
-        character.hitTo(enemy, new Damage(100));
+        character.attackTo(enemy, new Damage(100));
 
         assertEquals(enemy.getHealth(), new Health(900));
     }
@@ -32,7 +32,7 @@ public class RpgCombatKataTest {
         Character character = defaultCharacter();
         Character enemy = defaultCharacter();
 
-        character.hitTo(enemy, new Damage(2000));
+        character.attackTo(enemy, new Damage(2000));
 
         assertEquals(enemy.getHealth(), new Health(0));
         assertFalse(enemy.isAlive());
@@ -52,7 +52,7 @@ public class RpgCombatKataTest {
     public void character_cannot_deal_damage_to_itself() {
         Character character = defaultCharacter();
 
-        character.hitTo(character, new Damage(100));
+        character.attackTo(character, new Damage(100));
 
         assertEquals(character.getHealth(), new Health(1000));
     }
@@ -61,7 +61,7 @@ public class RpgCombatKataTest {
     public void character_can_only_heal_itself_if_he_is_alive() {
         Character character = defaultCharacter();
         Character character2 = defaultCharacter();
-        character.hitTo(character2, new Damage(200));
+        character.attackTo(character2, new Damage(200));
 
         boolean result = character.healTo(character2, 200);
 
@@ -72,20 +72,51 @@ public class RpgCombatKataTest {
     @Test
     public void if_the_target_is_5_or_more_Levels_above_the_attacker() {
         Character character = defaultCharacter();
-        Character enemy = new Character(new Health(1000), new Level(6), true);
+        Character enemy = new Character(new Health(1000), new Level(6), true, 0);
 
-        character.hitTo(enemy, new Damage(100));
+        character.attackTo(enemy, new Damage(100));
 
         assertEquals(enemy.getHealth(), new Health(950));
     }
 
     @Test
     public void if_the_target_is_5_or_more_Levels_below_the_attacker() {
-        Character character = new Character(new Health(1000), new Level(6), true);
+        Character character = new Character(new Health(1000), new Level(6), true, 0);
         Character enemy = defaultCharacter();
 
-        character.hitTo(enemy, new Damage(100));
+        character.attackTo(enemy, new Damage(100));
 
         assertEquals(enemy.getHealth(), new Health(850));
+    }
+
+    @Test
+    public void characters_have_an_attack_max_range() {
+        Character character = new Character(new Health(1000), new Level(6), true, 20);
+
+        assertEquals(character.getAttackMaxRange(), 20);
+    }
+
+    @Test
+    public void melee_fighters_have_range_of_2_meters() {
+        Character melee = melee();
+
+        assertEquals(melee.getAttackMaxRange(), 2);
+    }
+
+    @Test
+    public void ranged_fighters_have_range_of_20_meters() {
+        Character ranged = ranged();
+
+        assertEquals(ranged.getAttackMaxRange(), 20);
+    }
+
+    @Test
+    public void characters_must_be_in_range_to_deal_damage_to_a_target() {
+        Character character = melee();
+        Character enemy = ranged();
+
+        character.attackTo(enemy, new Damage(100));
+
+        assertEquals(enemy.getHealth(), new Health(1000));
     }
 }

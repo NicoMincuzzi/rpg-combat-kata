@@ -4,23 +4,33 @@ import java.util.UUID;
 
 public class Character {
     private final String id;
+    private final int attackMaxRange;
     private Health health;
     private final Level level;
     private boolean alive;
 
-    public Character(Health health, Level level, boolean alive) {
+    public Character(Health health, Level level, boolean alive, int attackMaxRange) {
         this.id = UUID.randomUUID().toString();
         this.health = health;
         this.level = level;
         this.alive = alive;
+        this.attackMaxRange = attackMaxRange;
     }
 
     public static Character defaultCharacter() {
-        return new Character(new Health(1000), new Level(1), true);
+        return new Character(new Health(1000), new Level(1), true, 0);
     }
 
     public static Character deadCharacter() {
-        return new Character(new Health(0), new Level(1), false);
+        return new Character(new Health(0), new Level(1), false, 0);
+    }
+
+    public static Character melee() {
+        return new Character(new Health(1000), new Level(1), true, 2);
+    }
+
+    public static Character ranged() {
+        return new Character(new Health(1000), new Level(1), true, 20);
     }
 
     public String getId() {
@@ -39,8 +49,12 @@ public class Character {
         return alive;
     }
 
-    public void hitTo(Character enemy, Damage damage) {
-        if (isItSelf(enemy)) {
+    public int getAttackMaxRange() {
+        return attackMaxRange;
+    }
+
+    public void attackTo(Character enemy, Damage damage) {
+        if (isItSelf(enemy) || attackMaxRange < enemy.attackMaxRange) {
             return;
         }
 
