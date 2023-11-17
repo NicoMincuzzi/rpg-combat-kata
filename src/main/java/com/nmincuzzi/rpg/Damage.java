@@ -2,7 +2,7 @@ package com.nmincuzzi.rpg;
 
 public record Damage(int value) {
 
-    public int calculateBasedOn(Level characterLevel, Level enemyLevel) {
+    public int calculateBasedOnChractersLevels(Level characterLevel, Level enemyLevel) {
         int damageValue = value;
         if (characterLevel.isTargetLevelFiveOrMoreAboveTheAttacker(enemyLevel.value())) {
             damageValue = decreaseFiftyPercent(damageValue);
