@@ -41,9 +41,9 @@ public class RpgCombatKataTest {
     @Test
     public void character_can_heal_character_if_he_is_not_dead() {
         Character character = defaultCharacter();
-        Character friend = deadCharacter();
+        Character deadCharacter = new Character(new Health(0), new Level(1), false, 0);
 
-        boolean result = character.healTo(friend, 2000);
+        boolean result = character.healTo(deadCharacter, 2000);
 
         assertFalse(result);
     }

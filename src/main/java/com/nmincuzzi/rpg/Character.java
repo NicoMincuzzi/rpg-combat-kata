@@ -1,6 +1,6 @@
 package com.nmincuzzi.rpg;
 
-import java.util.UUID;
+import static java.util.UUID.randomUUID;
 
 public class Character {
     private final String id;
@@ -10,7 +10,7 @@ public class Character {
     private boolean alive;
 
     public Character(Health health, Level level, boolean alive, int attackMaxRange) {
-        this.id = UUID.randomUUID().toString();
+        this.id = randomUUID().toString();
         this.health = health;
         this.level = level;
         this.alive = alive;
@@ -19,10 +19,6 @@ public class Character {
 
     public static Character defaultCharacter() {
         return new Character(new Health(1000), new Level(1), true, 0);
-    }
-
-    public static Character deadCharacter() {
-        return new Character(new Health(0), new Level(1), false, 0);
     }
 
     public static Character melee() {
