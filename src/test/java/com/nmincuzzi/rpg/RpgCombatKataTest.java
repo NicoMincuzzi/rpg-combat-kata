@@ -202,4 +202,24 @@ public class RpgCombatKataTest {
 
         assertEquals(ally.getHealth(), new Health(800));
     }
+
+    @Test
+    public void character_can_do_deal_damage_to_non_character() {
+        Character character = defaultCharacter();
+        NonCharacter tree = new NonCharacter(new Health(2000));
+
+        character.attackTo(tree, new Damage(100));
+
+        assertEquals(new Health(1900), tree.getHealth());
+    }
+
+    @Test
+    public void when_reduced_to_0_health_non_character_are_destroyed() {
+        Character character = defaultCharacter();
+        NonCharacter tree = new NonCharacter(new Health(300));
+
+        character.attackTo(tree, new Damage(500));
+
+        assertTrue(tree.isDestroyed());
+    }
 }

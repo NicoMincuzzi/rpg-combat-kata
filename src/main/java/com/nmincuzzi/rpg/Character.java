@@ -38,10 +38,6 @@ public class Character {
         return id;
     }
 
-    public Health getHealth() {
-        return health;
-    }
-
     public int getLevel() {
         return level.value();
     }
@@ -54,14 +50,21 @@ public class Character {
         return attackMaxRange;
     }
 
+    public Health getHealth() {
+        return health;
+    }
+
     public void attackTo(Character enemy, Damage damage) {
         if (!isEnableToAttach(enemy)) {
             return;
         }
 
         int newDamageValue = damage.calculateBasedOnChractersLevels(level, enemy.level);
-
         enemy.evaluateHealth(new Damage(newDamageValue));
+    }
+
+    public void attackTo(NonCharacter enemy, Damage damage) {
+        enemy.evaluateHealth(damage);
     }
 
     public boolean healTo(Character character, int power) {
