@@ -22,7 +22,7 @@ public class RpgCombatKataTest {
         Character character = defaultCharacter();
         Character enemy = defaultCharacter();
 
-        character.hitTo(enemy, 100);
+        character.hitTo(enemy, new Damage(100));
 
         assertEquals(enemy.getHealth(), new Health(900));
     }
@@ -32,7 +32,7 @@ public class RpgCombatKataTest {
         Character character = defaultCharacter();
         Character enemy = defaultCharacter();
 
-        character.hitTo(enemy, 2000);
+        character.hitTo(enemy, new Damage(2000));
 
         assertEquals(enemy.getHealth(), new Health(0));
         assertFalse(enemy.isAlive());
@@ -52,7 +52,7 @@ public class RpgCombatKataTest {
     public void character_cannot_deal_damage_to_itself() {
         Character character = defaultCharacter();
 
-        character.hitTo(character, 100);
+        character.hitTo(character, new Damage(100));
 
         assertEquals(character.getHealth(), new Health(1000));
     }
@@ -61,7 +61,7 @@ public class RpgCombatKataTest {
     public void character_can_only_heal_itself_if_he_is_alive() {
         Character character = defaultCharacter();
         Character character2 = defaultCharacter();
-        character.hitTo(character2, 200);
+        character.hitTo(character2, new Damage(200));
 
         boolean result = character.healTo(character2, 200);
 
@@ -72,21 +72,19 @@ public class RpgCombatKataTest {
     @Test
     public void if_the_target_is_5_or_more_Levels_above_the_attacker() {
         Character character = defaultCharacter();
-        Character enemy = defaultCharacter();
-        enemy.increaseLevel(5);
+        Character enemy = new Character(new Health(1000), new Level(6), true);
 
-        character.hitTo(enemy, 100);
+        character.hitTo(enemy, new Damage(100));
 
         assertEquals(enemy.getHealth(), new Health(950));
     }
 
     @Test
     public void if_the_target_is_5_or_more_Levels_below_the_attacker() {
-        Character character = defaultCharacter();
+        Character character = new Character(new Health(1000), new Level(6), true);
         Character enemy = defaultCharacter();
-        character.increaseLevel(5);
 
-        character.hitTo(enemy, 100);
+        character.hitTo(enemy, new Damage(100));
 
         assertEquals(enemy.getHealth(), new Health(850));
     }

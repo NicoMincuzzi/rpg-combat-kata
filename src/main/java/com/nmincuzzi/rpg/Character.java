@@ -5,10 +5,10 @@ import java.util.UUID;
 public class Character {
     private final String id;
     private Health health;
-    private Level level;
+    private final Level level;
     private boolean alive;
 
-    private Character(Health health, Level level, boolean alive) {
+    public Character(Health health, Level level, boolean alive) {
         this.id = UUID.randomUUID().toString();
         this.health = health;
         this.level = level;
@@ -39,18 +39,14 @@ public class Character {
         return alive;
     }
 
-    public void hitTo(Character enemy, int damage) {
+    public void hitTo(Character enemy, Damage damage) {
         if (isItSelf(enemy)) {
             return;
         }
-        if (level.isTargetLevelFiveOrMoreAboveTheAttacker(enemy.getLevel())) {
-            damage = damage / 2;
-        }
-        if (level.isTargetLevelFiveOrMoreBelowTheAttacker(enemy.getLevel())) {
-            damage += damage / 2;
-        }
 
-        enemy.decreaseHealth(damage);
+        int newDamageValue = damage.calculateBasedOn(level, enemy.level);
+
+        enemy.evaluateHealth(new Damage(newDamageValue));
     }
 
     public boolean healTo(Character friend, int power) {
@@ -61,20 +57,12 @@ public class Character {
         return true;
     }
 
-    public void increaseLevel(int value) {
-        int newLevelValue = this.level.value() + value;
-        this.level = new Level(newLevelValue);
-    }
+    private void evaluateHealth(Damage damage) {
+        this.health = new Health(health.healthPostDamage(damage));
 
-    private void decreaseHealth(int damage) {
-        if (health.isLethalDamage(damage)) {
-            health = new Health(0);
+        if (health.isUnderTheAliveThreshold()) {
             alive = false;
-            return;
         }
-
-        int newHealthValue = health.value() - damage;
-        this.health = new Health(newHealthValue);
     }
 
     private void increaseHealth(int power) {
