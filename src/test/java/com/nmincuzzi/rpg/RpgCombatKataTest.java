@@ -3,6 +3,7 @@ package com.nmincuzzi.rpg;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static com.nmincuzzi.rpg.Character.*;
 import static java.util.Set.of;
@@ -24,7 +25,7 @@ public class RpgCombatKataTest {
         Character character = defaultCharacter();
         Character enemy = defaultCharacter();
 
-        character.attackTo(enemy, new Damage(100));
+        character.attackTo(enemy, new Damage(100), new Relationship(new Factions(Set.of())));
 
         assertEquals(enemy.getHealth(), new Health(900));
     }
@@ -34,7 +35,7 @@ public class RpgCombatKataTest {
         Character character = defaultCharacter();
         Character enemy = defaultCharacter();
 
-        character.attackTo(enemy, new Damage(2000));
+        character.attackTo(enemy, new Damage(2000), new Relationship(new Factions(Set.of())));
 
         assertEquals(enemy.getHealth(), new Health(0));
         assertFalse(enemy.isAlive());
@@ -43,9 +44,9 @@ public class RpgCombatKataTest {
     @Test
     public void character_can_heal_character_if_he_is_not_dead() {
         Character character = defaultCharacter();
-        Character deadCharacter = new Character(new Health(0), new Level(1), false, 0, of());
+        Character deadCharacter = new Character(new Health(0), new Level(1), false, 0);
 
-        boolean result = character.healTo(deadCharacter, 2000);
+        boolean result = character.healTo(deadCharacter, 2000, new Relationship(new Factions(Set.of())));
 
         assertFalse(result);
     }
@@ -54,7 +55,7 @@ public class RpgCombatKataTest {
     public void character_cannot_deal_damage_to_itself() {
         Character character = defaultCharacter();
 
-        character.attackTo(character, new Damage(100));
+        character.attackTo(character, new Damage(100), new Relationship(new Factions(Set.of())));
 
         assertEquals(character.getHealth(), new Health(1000));
     }
@@ -63,9 +64,9 @@ public class RpgCombatKataTest {
     public void character_can_only_heal_itself_if_he_is_alive() {
         Character character = defaultCharacter();
         Character character2 = defaultCharacter();
-        character.attackTo(character2, new Damage(200));
+        character.attackTo(character2, new Damage(200), new Relationship(new Factions(Set.of())));
 
-        boolean result = character.healTo(character2, 200);
+        boolean result = character.healTo(character2, 200, new Relationship(new Factions(Set.of())));
 
         assertFalse(result);
         assertEquals(new Health(800), character2.getHealth());
@@ -74,26 +75,26 @@ public class RpgCombatKataTest {
     @Test
     public void if_the_target_is_5_or_more_Levels_above_the_attacker() {
         Character character = defaultCharacter();
-        Character enemy = new Character(new Health(1000), new Level(6), true, 0, of());
+        Character enemy = new Character(new Health(1000), new Level(6), true, 0);
 
-        character.attackTo(enemy, new Damage(100));
+        character.attackTo(enemy, new Damage(100), new Relationship(new Factions(Set.of())));
 
         assertEquals(enemy.getHealth(), new Health(950));
     }
 
     @Test
     public void if_the_target_is_5_or_more_Levels_below_the_attacker() {
-        Character character = new Character(new Health(1000), new Level(6), true, 0, of());
+        Character character = new Character(new Health(1000), new Level(6), true, 0);
         Character enemy = defaultCharacter();
 
-        character.attackTo(enemy, new Damage(100));
+        character.attackTo(enemy, new Damage(100), new Relationship(new Factions(Set.of())));
 
         assertEquals(enemy.getHealth(), new Health(850));
     }
 
     @Test
     public void characters_have_an_attack_max_range() {
-        Character character = new Character(new Health(1000), new Level(6), true, 20, of());
+        Character character = new Character(new Health(1000), new Level(6), true, 20);
 
         assertEquals(character.getAttackMaxRange(), 20);
     }
@@ -117,7 +118,7 @@ public class RpgCombatKataTest {
         Character character = melee();
         Character enemy = ranged();
 
-        character.attackTo(enemy, new Damage(100));
+        character.attackTo(enemy, new Damage(100), new Relationship(new Factions(Set.of())));
 
         assertEquals(enemy.getHealth(), new Health(1000));
     }
@@ -161,47 +162,51 @@ public class RpgCombatKataTest {
 
     @Test
     public void players_belonging_to_the_same_faction_are_considered_allies() {
+        Factions factions = new Factions(of(new Faction("faction_one"), new Faction("faction_two")));
         Character character = defaultCharacter();
-        character.joinToFactions(of(new Faction("faction_one"), new Faction("faction_two")));
+        factions.joinTo(List.of("faction_one", "faction_two"), character);
         Character ally = defaultCharacter();
-        ally.joinToFactions(of(new Faction("faction_one")));
+        factions.joinTo(List.of("faction_one"), ally);
 
-        boolean result = character.isAlliedWith(ally);
+        boolean result = new Relationship(factions).areAllied(character, ally);
 
         assertTrue(result);
     }
 
     @Test
     public void players_belonging_to_the_different_factions_are_considered_no_allies() {
-        Character characterOne = defaultCharacter();
-        characterOne.joinToFactions(of(new Faction("faction_two")));
-        Character characterTwo = defaultCharacter();
-        characterTwo.joinToFactions(of(new Faction("faction_one")));
+        Factions factions = new Factions(of(new Faction("faction_one"), new Faction("faction_two")));
+        Character character = defaultCharacter();
+        factions.joinTo(List.of("faction_two"), character);
+        Character ally = defaultCharacter();
+        factions.joinTo(List.of("faction_one"), ally);
 
-        boolean result = characterOne.isAlliedWith(characterTwo);
+        boolean result = new Relationship(factions).areAllied(character, ally);
 
         assertFalse(result);
     }
 
     @Test
     public void allies_cannot_deal_damage_to_one_another() {
+        Factions factions = new Factions(of(new Faction("faction_one"), new Faction("faction_two")));
         Character character = defaultCharacter();
-        character.joinToFactions(of(new Faction("faction_one"), new Faction("faction_two")));
+        factions.joinTo(List.of("faction_one", "faction_two"), character);
         Character ally = defaultCharacter();
-        ally.joinToFactions(of(new Faction("faction_one")));
+        factions.joinTo(List.of("faction_one"), ally);
 
-        character.attackTo(ally, new Damage(100));
+        character.attackTo(ally, new Damage(100), new Relationship(factions));
 
         assertEquals(ally.getHealth(), new Health(1000));
     }
 
     @Test
     public void allies_can_heal_one_another() {
+        Factions factions = new Factions(of(new Faction("faction_one"), new Faction("faction_two")));
         Character character = defaultCharacter();
-        character.joinToFactions(of(new Faction("faction_one"), new Faction("faction_two")));
-        Character ally = new Character(new Health(700), new Level(1), true, 0, of(new Faction("faction_one")));
+        factions.joinTo(List.of("faction_one", "faction_two"), character);
+        Character ally = new Character(new Health(700), new Level(1), true, 0);
 
-        character.healTo(ally, 100);
+        character.healTo(ally, 100, new Relationship(factions));
 
         assertEquals(ally.getHealth(), new Health(800));
     }

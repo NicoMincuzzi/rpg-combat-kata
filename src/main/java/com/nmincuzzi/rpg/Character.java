@@ -1,37 +1,32 @@
 package com.nmincuzzi.rpg;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import static java.util.UUID.randomUUID;
 
 public class Character {
     private final String id;
     private final int attackMaxRange;
-    private final Set<Faction> factions;
     private Health health;
     private final Level level;
     private boolean alive;
 
-    public Character(Health health, Level level, boolean alive, int attackMaxRange, Set<Faction> factions) {
+    public Character(Health health, Level level, boolean alive, int attackMaxRange) {
         this.id = randomUUID().toString();
         this.health = health;
         this.level = level;
         this.alive = alive;
         this.attackMaxRange = attackMaxRange;
-        this.factions = factions;
     }
 
     public static Character defaultCharacter() {
-        return new Character(new Health(1000), new Level(1), true, 0, new HashSet<>());
+        return new Character(new Health(1000), new Level(1), true, 0);
     }
 
     public static Character melee() {
-        return new Character(new Health(1000), new Level(1), true, 2, new HashSet<>());
+        return new Character(new Health(1000), new Level(1), true, 2);
     }
 
     public static Character ranged() {
-        return new Character(new Health(1000), new Level(1), true, 20, new HashSet<>());
+        return new Character(new Health(1000), new Level(1), true, 20);
     }
 
     public String getId() {
@@ -54,8 +49,8 @@ public class Character {
         return health;
     }
 
-    public void attackTo(Character enemy, Damage damage) {
-        if (!isEnableToAttach(enemy)) {
+    public void attackTo(Character enemy, Damage damage, Relationship relationship) {
+        if (!isEnableToAttach(enemy, relationship)) {
             return;
         }
 
@@ -67,20 +62,12 @@ public class Character {
         enemy.evaluateHealth(damage);
     }
 
-    public boolean healTo(Character character, int power) {
-        if (!isEnableToHeal(character)) {
+    public boolean healTo(Character character, int power, Relationship relationship) {
+        if (!isEnableToHeal(character, relationship)) {
             return false;
         }
         character.increaseHealth(power);
         return true;
-    }
-
-    public void joinToFactions(Set<Faction> factions) {
-        this.factions.addAll(factions);
-    }
-
-    public boolean isAlliedWith(Character character) {
-        return factions.stream().anyMatch(character.factions::contains);
     }
 
     private void evaluateHealth(Damage damage) {
@@ -99,11 +86,11 @@ public class Character {
         return id.equals(character.getId());
     }
 
-    private boolean isEnableToAttach(Character enemy) {
-        return !isItSelf(enemy) && attackMaxRange >= enemy.attackMaxRange && !isAlliedWith(enemy);
+    private boolean isEnableToAttach(Character enemy, Relationship relationship) {
+        return !isItSelf(enemy) && attackMaxRange >= enemy.attackMaxRange && !relationship.areAllied(this,enemy);
     }
 
-    private boolean isEnableToHeal(Character character) {
-        return character.isAlive() && (isItSelf(character) || isAlliedWith(character));
+    private boolean isEnableToHeal(Character character, Relationship relationship) {
+        return character.isAlive() && (isItSelf(character) || relationship.areAllied(this,this));
     }
 }
