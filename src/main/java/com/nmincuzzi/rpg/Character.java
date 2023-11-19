@@ -75,16 +75,8 @@ public class Character {
         return true;
     }
 
-    public boolean hasFactions() {
-        return !factions.isEmpty();
-    }
-
     public void joinToFactions(Set<Faction> factions) {
         this.factions.addAll(factions);
-    }
-
-    public void leaveFactions(Set<Faction> factionOne) {
-        factions.removeAll(factionOne);
     }
 
     public boolean isAlliedWith(Character character) {

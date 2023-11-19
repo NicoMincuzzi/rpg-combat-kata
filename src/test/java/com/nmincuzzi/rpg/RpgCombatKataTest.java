@@ -2,9 +2,10 @@ package com.nmincuzzi.rpg;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
+import java.util.List;
 
 import static com.nmincuzzi.rpg.Character.*;
+import static java.util.Set.of;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RpgCombatKataTest {
@@ -42,7 +43,7 @@ public class RpgCombatKataTest {
     @Test
     public void character_can_heal_character_if_he_is_not_dead() {
         Character character = defaultCharacter();
-        Character deadCharacter = new Character(new Health(0), new Level(1), false, 0, Set.of());
+        Character deadCharacter = new Character(new Health(0), new Level(1), false, 0, of());
 
         boolean result = character.healTo(deadCharacter, 2000);
 
@@ -73,7 +74,7 @@ public class RpgCombatKataTest {
     @Test
     public void if_the_target_is_5_or_more_Levels_above_the_attacker() {
         Character character = defaultCharacter();
-        Character enemy = new Character(new Health(1000), new Level(6), true, 0, Set.of());
+        Character enemy = new Character(new Health(1000), new Level(6), true, 0, of());
 
         character.attackTo(enemy, new Damage(100));
 
@@ -82,7 +83,7 @@ public class RpgCombatKataTest {
 
     @Test
     public void if_the_target_is_5_or_more_Levels_below_the_attacker() {
-        Character character = new Character(new Health(1000), new Level(6), true, 0, Set.of());
+        Character character = new Character(new Health(1000), new Level(6), true, 0, of());
         Character enemy = defaultCharacter();
 
         character.attackTo(enemy, new Damage(100));
@@ -92,7 +93,7 @@ public class RpgCombatKataTest {
 
     @Test
     public void characters_have_an_attack_max_range() {
-        Character character = new Character(new Health(1000), new Level(6), true, 20, Set.of());
+        Character character = new Character(new Health(1000), new Level(6), true, 20, of());
 
         assertEquals(character.getAttackMaxRange(), 20);
     }
@@ -123,45 +124,47 @@ public class RpgCombatKataTest {
 
     @Test
     public void characters_may_belong_to_one_or_more_factions_newly_created_characters_belong_to_no_faction() {
+        Faction faction = new Faction("faction_1");
         Character character = defaultCharacter();
 
-        assertFalse(character.hasFactions());
+        boolean result = faction.hasMember(character);
+
+        assertFalse(result);
     }
 
     @Test
     public void character_may_join_one_or_more_factions() {
+        Faction factionOne = new Faction("faction_one");
+        Faction factionTwo = new Faction("faction_two");
+        Faction factionThree = new Faction("faction_three");
+        Factions factions = new Factions(of(factionOne, factionTwo, factionThree));
         Character character = defaultCharacter();
 
-        character.joinToFactions(Set.of(new Faction("faction_one"), new Faction("faction_two")));
+        factions.joinTo(List.of("faction_one", "faction_two"), character);
 
-        assertTrue(character.hasFactions());
+        assertTrue(factionOne.hasMember(character));
+        assertTrue(factionTwo.hasMember(character));
+        assertFalse(factionThree.hasMember(character));
     }
 
     @Test
     public void character_may_leave_one_or_more_factions() {
         Character character = defaultCharacter();
-        character.joinToFactions(Set.of(new Faction("faction_one"), new Faction("faction_two")));
+        Faction factionOne = new Faction("faction_one");
+        Factions factions = new Factions(of(factionOne, new Faction("faction_two")));
+        factions.joinTo(List.of("faction_one", "faction_two"), character);
 
-        character.leaveFactions(Set.of(new Faction("faction_one")));
+        factions.leave(List.of("faction_one"), character);
 
-        assertTrue(character.hasFactions());
-    }
-
-    @Test
-    public void character_may_leave_one_or_more_factions_when_no_factions_exists() {
-        Character character = defaultCharacter();
-
-        character.leaveFactions(Set.of(new Faction("faction_one")));
-
-        assertFalse(character.hasFactions());
+        assertFalse(factionOne.hasMember(character));
     }
 
     @Test
     public void players_belonging_to_the_same_faction_are_considered_allies() {
         Character character = defaultCharacter();
-        character.joinToFactions(Set.of(new Faction("faction_one"), new Faction("faction_two")));
+        character.joinToFactions(of(new Faction("faction_one"), new Faction("faction_two")));
         Character ally = defaultCharacter();
-        ally.joinToFactions(Set.of(new Faction("faction_one")));
+        ally.joinToFactions(of(new Faction("faction_one")));
 
         boolean result = character.isAlliedWith(ally);
 
@@ -171,9 +174,9 @@ public class RpgCombatKataTest {
     @Test
     public void players_belonging_to_the_different_factions_are_considered_no_allies() {
         Character characterOne = defaultCharacter();
-        characterOne.joinToFactions(Set.of(new Faction("faction_two")));
+        characterOne.joinToFactions(of(new Faction("faction_two")));
         Character characterTwo = defaultCharacter();
-        characterTwo.joinToFactions(Set.of(new Faction("faction_one")));
+        characterTwo.joinToFactions(of(new Faction("faction_one")));
 
         boolean result = characterOne.isAlliedWith(characterTwo);
 
@@ -183,9 +186,9 @@ public class RpgCombatKataTest {
     @Test
     public void allies_cannot_deal_damage_to_one_another() {
         Character character = defaultCharacter();
-        character.joinToFactions(Set.of(new Faction("faction_one"), new Faction("faction_two")));
+        character.joinToFactions(of(new Faction("faction_one"), new Faction("faction_two")));
         Character ally = defaultCharacter();
-        ally.joinToFactions(Set.of(new Faction("faction_one")));
+        ally.joinToFactions(of(new Faction("faction_one")));
 
         character.attackTo(ally, new Damage(100));
 
@@ -195,8 +198,8 @@ public class RpgCombatKataTest {
     @Test
     public void allies_can_heal_one_another() {
         Character character = defaultCharacter();
-        character.joinToFactions(Set.of(new Faction("faction_one"), new Faction("faction_two")));
-        Character ally = new Character(new Health(700), new Level(1), true, 0, Set.of(new Faction("faction_one")));
+        character.joinToFactions(of(new Faction("faction_one"), new Faction("faction_two")));
+        Character ally = new Character(new Health(700), new Level(1), true, 0, of(new Faction("faction_one")));
 
         character.healTo(ally, 100);
 
